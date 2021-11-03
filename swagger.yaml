@@ -1,718 +1,3814 @@
----
 swagger: "2.0"
 info:
-  description: "This is a sample server Petstore server.  You can find out more about\
-    \ Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).\
-    \  For this sample, you can use the api key `special-key` to test the authorization\
-    \ filters."
-  version: "1.0.5"
-  title: "Swagger Petstore"
-  termsOfService: "http://swagger.io/terms/"
+  description: "This is the api documentation for Serba Dinamik's eProcurement system."
+  version: "1.0.0"
+  title: "eProcurement - Backend API"
   contact:
-    email: "apiteam@swagger.io"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "petstore.swagger.io"
-basePath: "/v2"
+    email: "haziq.zaharuddin@e-serbadkgroup.com"
+host: "swagger.io"
+basePath: "/api"
 tags:
-- name: "pet"
-  description: "Everything about your Pets"
-  externalDocs:
-    description: "Find out more"
-    url: "http://swagger.io"
-- name: "store"
-  description: "Access to Petstore orders"
+- name: "auth"
+- name: "buyer group"
+- name: "branch"
+- name: "company"
+- name: "department"
+- name: "project"
+- name: "file"
 - name: "user"
-  description: "Operations about user"
-  externalDocs:
-    description: "Find out more about our store"
-    url: "http://swagger.io"
+- name: "admin"
+- name: "purchase request"
+- name: "purchase order"
 schemes:
 - "https"
 - "http"
 paths:
-  /pet/{petId}/uploadImage:
+  /auth/login:
     post:
       tags:
-      - "pet"
-      summary: "uploads an image"
+      - "auth"
+      summary: "Login for all users"
       description: ""
-      operationId: "uploadFile"
       consumes:
-      - "multipart/form-data"
+      - "application/json"
       produces:
       - "application/json"
       parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to update"
+      - in: "body"
+        name: "body"
+        description: ""
         required: true
-        type: "integer"
-        format: "int64"
-      - name: "additionalMetadata"
-        in: "formData"
-        description: "Additional data to pass to server"
-        required: false
-        type: "string"
-      - name: "file"
-        in: "formData"
-        description: "file to upload"
-        required: false
-        type: "file"
+        schema:
+          $ref: "#/definitions/LoginRequest"
       responses:
-        200:
-          description: "successful operation"
+        "200":
+          description: "Successful login"
           schema:
-            $ref: "#/definitions/ApiResponse"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet:
+            $ref: "#/definitions/LoginResponse"
+        "400":
+          description: "Invalid or missing input / User does not exist / Account has been blocked / User has been deleted"
+  /auth/password/forgot:  
     post:
       tags:
-      - "pet"
-      summary: "Add a new pet to the store"
-      description: ""
-      operationId: "addPet"
+      - "auth"
+      summary: "Forgot password"
+      description: "Reset user’s password to a temporary password and send it in an email"
       consumes:
       - "application/json"
-      - "application/xml"
       produces:
       - "application/json"
-      - "application/xml"
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: ""
         required: true
         schema:
-          $ref: "#/definitions/Pet"
+          $ref: "#/definitions/ForgotPasswordRequest"
       responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    put:
+        "200":
+          description: "Successful request a temporary password"
+        "400":
+          description: "User does not exist / Account has been blocked / User has been deleted"
+  /auth/password/reset:  
+    post:
       tags:
-      - "pet"
-      summary: "Update an existing pet"
-      description: ""
-      operationId: "updatePet"
+      - "auth"
+      summary: "Reset password"
+      description: "Reset user’s password to a new one set by user"
       consumes:
       - "application/json"
-      - "application/xml"
       produces:
       - "application/json"
-      - "application/xml"
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: ""
         required: true
         schema:
-          $ref: "#/definitions/Pet"
+          $ref: "#/definitions/ResetPasswordRequest"
       responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-        405:
-          description: "Validation exception"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByStatus:
+        "200":
+          description: "Successfully reset password"
+        "400":
+          description: "Invalid or missing input / Password does not match"
+        "401":
+          description: "Invalid access token"  
+  /auth/logout:  
+    post:
+      tags:
+      - "auth"
+      summary: "Logout"
+      description: ""
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Successfully logout"
+        "401":
+          description: "Invalid access token"        
+  
+  /buyer-group/list:  
     get:
       tags:
-      - "pet"
-      summary: "Finds Pets by status"
-      description: "Multiple status values can be provided with comma separated strings"
-      operationId: "findPetsByStatus"
+      - "buyer group"
+      summary: "Get buyer group list"
+      description: "For admin use only"
       produces:
       - "application/json"
-      - "application/xml"
       parameters:
-      - name: "status"
+      - name: "order_by"
         in: "query"
-        description: "Status values that need to be considered for filter"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "available"
-          - "pending"
-          - "sold"
-          default: "available"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid status value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByTags:
-    get:
-      tags:
-      - "pet"
-      summary: "Finds Pets by tags"
-      description: "Multiple tags can be provided with comma separated strings. Use\
-        \ tag1, tag2, tag3 for testing."
-      operationId: "findPetsByTags"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "tags"
+        type: "string"
+        enum:
+        - "created_at"
+        - "buyer_group_name"
+        default: "created_at"
+      - name: "order"
         in: "query"
-        description: "Tags to filter by"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid tag value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-      deprecated: true
-  /pet/{petId}:
-    get:
-      tags:
-      - "pet"
-      summary: "Find pet by ID"
-      description: "Returns a single pet"
-      operationId: "getPetById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to return"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - api_key: []
-    post:
-      tags:
-      - "pet"
-      summary: "Updates a pet in the store with form data"
-      description: ""
-      operationId: "updatePetWithForm"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet that needs to be updated"
-        required: true
-        type: "integer"
-        format: "int64"
-      - name: "name"
-        in: "formData"
-        description: "Updated name of the pet"
-        required: false
         type: "string"
-      - name: "status"
-        in: "formData"
-        description: "Updated status of the pet"
-        required: false
-        type: "string"
-      responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    delete:
-      tags:
-      - "pet"
-      summary: "Deletes a pet"
-      description: ""
-      operationId: "deletePet"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "api_key"
-        in: "header"
-        required: false
-        type: "string"
-      - name: "petId"
-        in: "path"
-        description: "Pet id to delete"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /store/order:
-    post:
-      tags:
-      - "store"
-      summary: "Place an order for a pet"
-      description: ""
-      operationId: "placeOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "order placed for purchasing the pet"
-        required: true
-        schema:
-          $ref: "#/definitions/Order"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid Order"
-  /store/order/{orderId}:
-    get:
-      tags:
-      - "store"
-      summary: "Find purchase order by ID"
-      description: "For valid response try integer IDs with value >= 1 and <= 10.\
-        \ Other values will generated exceptions"
-      operationId: "getOrderById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of pet that needs to be fetched"
-        required: true
-        type: "integer"
-        maximum: 10
-        minimum: 1
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-    delete:
-      tags:
-      - "store"
-      summary: "Delete purchase order by ID"
-      description: "For valid response try integer IDs with positive integer value.\
-        \ Negative or non-integer values will generate API errors"
-      operationId: "deleteOrder"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of the order that needs to be deleted"
-        required: true
-        type: "integer"
-        minimum: 1
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-  /store/inventory:
-    get:
-      tags:
-      - "store"
-      summary: "Returns pet inventories by status"
-      description: "Returns a map of status codes to quantities"
-      operationId: "getInventory"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "object"
-            additionalProperties:
-              type: "integer"
-              format: "int32"
-      security:
-      - api_key: []
-  /user/createWithArray:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithArrayInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/createWithList:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithListInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/{username}:
-    get:
-      tags:
-      - "user"
-      summary: "Get user by user name"
-      description: ""
-      operationId: "getUserByName"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be fetched. Use user1 for testing. "
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/User"
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-    put:
-      tags:
-      - "user"
-      summary: "Updated user"
-      description: "This can only be done by the logged in user."
-      operationId: "updateUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "name that need to be updated"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "Updated user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
-      responses:
-        400:
-          description: "Invalid user supplied"
-        404:
-          description: "User not found"
-    delete:
-      tags:
-      - "user"
-      summary: "Delete user"
-      description: "This can only be done by the logged in user."
-      operationId: "deleteUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be deleted"
-        required: true
-        type: "string"
-      responses:
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-  /user/login:
-    get:
-      tags:
-      - "user"
-      summary: "Logs user into the system"
-      description: ""
-      operationId: "loginUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
         in: "query"
-        description: "The user name for login"
-        required: true
-        type: "string"
-      - name: "password"
+        type: "integer"
+        default: 15
+      - name: "page"
         in: "query"
-        description: "The password for login in clear text"
-        required: true
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the buyer group name"
         type: "string"
+      - name: "delete_filter"
+        in: "query"
+        description: "Filter for the deleted buyer group (1 / 0)"
+        type: "integer"
       responses:
-        200:
-          description: "successful operation"
-          headers:
-            X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
-            X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
+        "200":
+          description: ""
           schema:
-            type: "string"
-        400:
-          description: "Invalid username/password supplied"
-  /user/logout:
-    get:
-      tags:
-      - "user"
-      summary: "Logs out current logged in user session"
-      description: ""
-      operationId: "logoutUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters: []
-      responses:
-        default:
-          description: "successful operation"
-  /user:
+            $ref: "#/definitions/BuyerGroupListResponse"
+        "401":
+          description: "Invalid access token"
+  /buyer-group/add:  
     post:
       tags:
-      - "user"
-      summary: "Create user"
-      description: "This can only be done by the logged in user."
-      operationId: "createUser"
+      - "buyer group"
+      summary: "Add new buyer group"
+      description: "For admin use only"
       consumes:
       - "application/json"
       produces:
       - "application/json"
-      - "application/xml"
       parameters:
       - in: "body"
         name: "body"
-        description: "Created user object"
+        description: ""
         required: true
         schema:
-          $ref: "#/definitions/User"
+          $ref: "#/definitions/AddBuyerGroupRequest"
       responses:
-        default:
-          description: "successful operation"
-securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "api_key"
-    in: "header"
-  petstore_auth:
-    type: "oauth2"
-    authorizationUrl: "https://petstore.swagger.io/oauth/authorize"
-    flow: "implicit"
-    scopes:
-      read:pets: "read your pets"
-      write:pets: "modify pets in your account"
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/AddBuyerGroupResponse"
+        "400":
+          description: "Invalid or missing input / Buyer group with same name existed"
+        "401":
+          description: "Invalid access token"
+  /buyer-group/edit/{id}:  
+    post:
+      tags:
+      - "buyer group"
+      summary: "Edit name of buyer group"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of buyer group"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddBuyerGroupRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BuyerGroupListResponse"
+        "400":
+          description: "Invalid or missing input / Buyer group with same name existed / Invalid buyer group id"
+        "401":
+          description: "Invalid access token"
+  /buyer-group/delete/{id}:  
+    post:
+      tags:
+      - "buyer group"
+      summary: "Delete buyer group"
+      description: "For admin use only. This is soft delete. Buyer group can be recovered with the same api."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of buyer group"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/DeleteBuyerGroupRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BuyerGroupListResponse"
+        "400":
+          description: "Invalid buyer group id"
+        "401":
+          description: "Invalid access token"
+  
+  /branch/adminList:  
+    get:
+      tags:
+      - "branch"
+      summary: "Get branch list for admin"
+      description: "For admin use only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "buyer_group_name"
+        - "branch_name"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the branch name"
+        type: "string"
+      - name: "delete_filter"
+        in: "query"
+        description: "Filter for the deleted branch (1 / 0)"
+        type: "integer"
+      - name: "buyer_group_filter"
+        in: "query"
+        description: "Filter for the buyer group name"
+        type: "string"
+      - name: "buyer_group_null"
+        in: "query"
+        description: "Filter for branches with null buyer group (1 / 0)"
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BranchListAdminResponse"
+        "401":
+          description: "Invalid access token"
+  /branch/list:  
+    get:
+      tags:
+      - "branch"
+      summary: "Get branch list for users"
+      description: "List of branches that is not deleted"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "branch_name"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the branch name"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BranchListResponse"
+  /branch/add:  
+    post:
+      tags:
+      - "branch"
+      summary: "Add new branch"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddBranchRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BranchListAdminResponse"
+        "400":
+          description: "Invalid or missing input / Branch with same name existed"
+        "401":
+          description: "Invalid access token"
+  /branch/edit/{id}:  
+    post:
+      tags:
+      - "branch"
+      summary: "Edit branch"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of branch"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddBranchRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BranchListAdminResponse"
+        "400":
+          description: "Invalid or missing input / Branch with this ID does not exist / Branch with same name existed"
+        "401":
+          description: "Invalid access token"
+  /branch/delete/{id}:  
+    post:
+      tags:
+      - "branch"
+      summary: "Delete branch"
+      description: "For admin use only. This is soft delete. Branch can be recovered with the same api."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of branch"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/DeleteBranchRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/BranchListAdminResponse"
+        "400":
+          description: "Branch with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+  /company/adminList:  
+    get:
+      tags:
+      - "company"
+      summary: "Get company list for admin"
+      description: "For admin use only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "company_name"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the company name"
+        type: "string"
+      - name: "delete_filter"
+        in: "query"
+        description: "Filter for the deleted company (1 / 0)"
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/CompanyListResponse"
+        "401":
+          description: "Invalid access token"
+  /company/list:  
+    get:
+      tags:
+      - "company"
+      summary: "Get company list for users"
+      description: "Only company that's not deleted"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "company_name"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the company name"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/CompanyListResponse"
+  /company/add:  
+    post:
+      tags:
+      - "company"
+      summary: "Add new company"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddCompanyRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/CompanyListResponse"
+        "400":
+          description: "Invalid or missing input / Company with same name existed"
+        "401":
+          description: "Invalid access token"
+  /company/edit/{id}:  
+    post:
+      tags:
+      - "company"
+      summary: "Edit company"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of company"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddCompanyRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/CompanyListResponse"
+        "400":
+          description: "Invalid or missing input / Company with same name existed / Company with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+  /company/delete/{id}:  
+    post:
+      tags:
+      - "company"
+      summary: "Delete company"
+      description: "For admin use only. This is soft delete. Company can be recovered with the same api."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of company"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/DeleteCompanyRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/CompanyListResponse"
+        "400":
+          description: "Company with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+  /department/adminList:  
+    get:
+      tags:
+      - "department"
+      summary: "Get department list for admin"
+      description: "For admin use only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "department_name"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the department name"
+        type: "string"
+      - name: "delete_filter"
+        in: "query"
+        description: "Filter for the deleted company (1 / 0)"
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/DepartmentListResponse"
+        "401":
+          description: "Invalid access token"
+  /department/list:  
+    get:
+      tags:
+      - "department"
+      summary: "Get department list for users"
+      description: "Display not deleted departments only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "department_name"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the department name"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/DepartmentListResponse"
+        "401":
+          description: "Invalid access token"
+  /department/add:  
+    post:
+      tags:
+      - "department"
+      summary: "Add new department"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddDepartmentRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/DepartmentListResponse"
+        "400":
+          description: "Invalid or missing input / Department with same name existed"
+        "401":
+          description: "Invalid access token"
+  /department/edit/{id}:  
+    post:
+      tags:
+      - "department"
+      summary: "Edit department"
+      description: "For admin use only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of department"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddDepartmentRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/DepartmentListResponse"
+        "400":
+          description: "Invalid or missing input / Department with same name existed / Department with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+  /department/delete/{id}:  
+    post:
+      tags:
+      - "department"
+      summary: "Delete department"
+      description: "For admin use only. This is soft delete. Department can be recovered with the same api."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of department"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/DeleteDepartmentRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/DepartmentListResponse"
+        "400":
+          description: "Department with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+  /project/adminList:  
+    get:
+      tags:
+      - "project"
+      summary: "Get project list for admin"
+      description: "For admin use only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "project_title"
+        - "project_code"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "delete_filter"
+        in: "query"
+        description: "Filter for the deleted project (1 / 0)"
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ProjectListResponse"
+        "401":
+          description: "Invalid access token"
+  /project/list:  
+    get:
+      tags:
+      - "project"
+      summary: "Get project list for users"
+      description: "Get projects that's not deleted"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "created_at"
+        - "project_title"
+        - "project_code"
+        default: "created_at"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ProjectListResponse"
+  /project/details/{id}:  
+    get:
+      tags:
+      - "project"
+      summary: "Get project details"
+      description: "For admin only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of project"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ProjectDetailsResponse"
+        "400":
+          description: "Invalid project ID"
+        "401":
+          description: "Invalid access token"
+  /project/add:  
+    post:
+      tags:
+      - "project"
+      summary: "Add new project"
+      description: "For admin only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddProjectRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ProjectDetailsResponse"
+        "400":
+          description: "Invalid or missing input fields / Project with the same project code already existed"
+        "401":
+          description: "Invalid access token"
+  /project/edit/{id}:  
+    post:
+      tags:
+      - "project"
+      summary: "Edit project"
+      description: "For admin only"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of project"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AddProjectRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ProjectDetailsResponse"
+        "400":
+          description: "Invalid or missing input fields / Project with the same project code already existed / Project with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+  /project/delete/{id}:  
+    post:
+      tags:
+      - "project"
+      summary: "Delete project"
+      description: "For admin only. This is soft delete. Project can be recovered with the same api."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of project"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ProjectDetailsResponse"
+        "400":
+          description: "Project with this ID does not exist"
+        "401":
+          description: "Invalid access token"
+          
+  /file/upload:  
+    post:
+      tags:
+      - "file"
+      summary: "Upload file"
+      description: "Can be used by all user. Will store file and return filename."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/UploadFileRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UploadFileResponse"
+        "400":
+          description: "Missing input file"
+        "401":
+          description: "Invalid access token"
+
+  /user/details:  
+    get:
+      tags:
+      - "user"
+      summary: "Get user details"
+      description: "Use access token to get self details"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "401":
+          description: "Invalid access token"
+  /user/list:  
+    get:
+      tags:
+      - "user"
+      summary: "Get user list"
+      description: "Only users who are verified and not deleted"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "user_id"
+        - "name"
+        - "created_at"
+        default: "user_id"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "search_value"
+        in: "query"
+        description: "Filter for the name"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserListResponse"
+  /user/register:  
+    post:
+      tags:
+      - "user"
+      summary: "Register for normal employee"
+      description: "Can be used by all user. Will store file and return filename."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/RegisterRequest"
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: "Invalid or missing input parameters / User with this email already exist"
+  /user/nominate:  
+    get:
+      tags:
+      - "user"
+      summary: "Get nomination status of Ass PM or Ass SCM"
+      description: "Only used by Admin, Procurement Manager and Head of SCM"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserNominateResponse"
+        
+        "400":
+          description: "You do not have access for this feature"
+        "401":
+          description: "Invalid access token"
+    post:
+      tags:
+      - "user"
+      summary: "Toggle nomination of Ass PM or Ass SCM"
+      description: "Only used by Admin, Procurement Manager and Head of SCM"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/UserNominateRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserNominateResponse"
+        "400":
+          description: "Invalid or missing input parameters / You do not have access for this feature"
+        "401":
+          description: "Invalid access token"
+  /admin/register:  
+    post:
+      tags:
+      - "admin"
+      summary: "Register for normal admin"
+      description: "Called from Postman."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AdminRegisterRequest"
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: "Invalid or missing input parameters / User with this email already exist"
+  /admin/user/add:  
+    post:
+      tags:
+      - "admin"
+      summary: "Add new user"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AdminAddUserRequest"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "400":
+          description: "Invalid or missing input parameters / User with this email already exist"
+        "401":
+          description: "Invalid access token"
+  /admin/user/list:  
+    get:
+      tags:
+      - "admin"
+      summary: "Get all user list"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "email"
+        - "name"
+        - "department"
+        - "company"
+        - "branch"
+        - "user_id"
+        - "created_at"
+        default: "user_id"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "name_filter"
+        in: "query"
+        description: "Filter for the name"
+        type: "string"
+      - name: "email_filter"
+        in: "query"
+        description: "Filter for the email"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      - name: "role_filter"
+        in: "query"
+        description: "Filter for the role"
+        type: "string"
+      - name: "verify_filter"
+        in: "query"
+        description: "Filter for verification status (1 - verified, 0 - not verified, null - all)"
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserListResponse"
+  /admin/user/details/{id}:  
+    get:
+      tags:
+      - "admin"
+      summary: "Get user details"
+      description: ""
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of user"
+        required: true
+        type: "integer"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "400":
+          description: "Invalid user ID"
+        "401":
+          description: "Invalid access token"
+    post:
+      tags:
+      - "admin"
+      summary: "Update user details"
+      description: ""
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of user"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AdminVerifyUserRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "400":
+          description: "Invalid user ID / Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /admin/user/verify/{id}:  
+    post:
+      tags:
+      - "admin"
+      summary: "Verify user who registers"
+      description: ""
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of user"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/AdminVerifyUserRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "400":
+          description: "Invalid user ID / Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /admin/user/delete/{id}:  
+    post:
+      tags:
+      - "admin"
+      summary: "Delete users"
+      description: "This is soft delete. Users can be recovered with the same api."
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of user"
+        required: true
+        type: "integer"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "400":
+          description: "Invalid user ID"
+        "401":
+          description: "Invalid access token"
+  /admin/user/block/{id}:  
+    post:
+      tags:
+      - "admin"
+      summary: "Block / unblock users"
+      description: "Users can be unblock with the same api."
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of user"
+        required: true
+        type: "integer"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+        "400":
+          description: "Invalid user ID"
+        "401":
+          description: "Invalid access token"
+  /admin/pr/list:  
+    get:
+      tags:
+      - "admin"
+      summary: "Get all pr list"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "pr_status"
+        - "pr_number"
+        - "project_code"
+        - "project_title"
+        - "name"
+        - "submission_datetime"
+        - "department"
+        - "company"
+        - "branch"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      - name: "pr_status_filter"
+        in: "query"
+        description: "Filter for the pr status"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "name_filter"
+        in: "query"
+        description: "Filter for the name"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrListResponse"
+        "401":
+          description: "Invalid access token"
+  /admin/po/list:  
+    get:
+      tags:
+      - "admin"
+      summary: "Get all po list"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "po_status"
+        - "po_number"
+        - "project_code"
+        - "project_title"
+        - "name"
+        - "company"
+        - "branch"
+        - "department"
+        - "amount"
+        - "submission_datetime"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "po_number_filter"
+        in: "query"
+        description: "Filter for the po number"
+        type: "string"
+      - name: "po_status_filter"
+        in: "query"
+        description: "Filter for the po status"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "name_filter"
+        in: "query"
+        description: "Filter for the name"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoListResponse"
+        "401":
+          description: "Invalid access token"
+  /admin/po/list/{id}:  
+    get:
+      tags:
+      - "admin"
+      summary: "Get all po list based on pr ID"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "po_status"
+        - "po_number"
+        - "amount"
+        - "submission_datetime"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "po_number_filter"
+        in: "query"
+        description: "Filter for the po number"
+        type: "string"
+      - name: "po_status_filter"
+        in: "query"
+        description: "Filter for the po status"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoListIdResponse"
+        "400":
+          description: "Invalid po ID"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/list:  
+    get:
+      tags:
+      - "purchase request"
+      summary: "Get self pr list"
+      description: "Only for employee and buyer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "pr_status"
+        - "pr_number"
+        - "project_code"
+        - "project_title"
+        - "submission_datetime"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      - name: "pr_status_filter"
+        in: "query"
+        description: "Filter for the pr status"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrListSelfResponse"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/details/{id}:  
+    get:
+      tags:
+      - "purchase request"
+      summary: "Get pr details"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrDetailsResponse"
+        "400":
+          description: "Invalid pr ID"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/pending:  
+    get:
+      tags:
+      - "purchase request"
+      summary: "Get PR that is pending user’s approval / verify"
+      description: "All users who are verifier / approver"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "pr_number"
+        - "project_code"
+        - "project_title"
+        - "name"
+        - "submission_datetime"
+        - "department"
+        - "company"
+        - "branch"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "name_filter"
+        in: "query"
+        description: "Filter for the name"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrListResponse"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/verify/{id}:  
+    post:
+      tags:
+      - "purchase request"
+      summary: "Approve / reject / amend pr"
+      description: "All users who are verifier / approver"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/VerifyPrRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrDetailsResponse"
+        "400":
+          description: "Invalid pr ID / Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/submit:  
+    post:
+      tags:
+      - "purchase request"
+      summary: "Submit pr"
+      description: "Employee / buyer only"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/SubmitPrRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrDetailsResponse"
+        "400":
+          description: "Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/resubmit/{id}:  
+    post:
+      tags:
+      - "purchase request"
+      summary: "Resubmit a pr"
+      description: "Owner of PR with AMMEND status"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/SubmitPrRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrDetailsResponse"
+        "400":
+          description: "Invalid pr ID / Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/buyerList:  
+    get:
+      tags:
+      - "purchase request"
+      summary: "Get PR list for buyer"
+      description: "Get PR list without 1 PO raised and if buyer has raised at least 1 po from the pr"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "pr_number"
+        - "project_code"
+        - "project_title"
+        - "name"
+        - "submission_datetime"
+        - "department"
+        - "company"
+        - "branch"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "name_filter"
+        in: "query"
+        description: "Filter for the name"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrListResponse"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/close/{id}:  
+    post:
+      tags:
+      - "purchase request"
+      summary: "Buyer close pr"
+      description: "Buyer only"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrDetailsResponse"
+        "400":
+          description: "Invalid pr ID"
+        "401":
+          description: "Invalid access token"
+  /purchase-request/cancel/{id}:  
+    post:
+      tags:
+      - "purchase request"
+      summary: "Close pr"
+      description: "User cancel if status has not been approved or buyer cancel if have approved"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PrDetailsResponse"
+        "400":
+          description: "Invalid pr ID"
+        "401":
+          description: "Invalid access token"
+  /purchase-order/list:  
+    get:
+      tags:
+      - "purchase order"
+      summary: "Get po list of self"
+      description: "Buyers only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "po_status"
+        - "po_number"
+        - "project_code"
+        - "project_title"
+        - "company"
+        - "branch"
+        - "department"
+        - "amount"
+        - "submission_datetime"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "po_number_filter"
+        in: "query"
+        description: "Filter for the po number"
+        type: "string"
+      - name: "po_status_filter"
+        in: "query"
+        description: "Filter for the po status"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoListResponse"
+        "401":
+          description: "Invalid access token"
+  /purchase-order/list/{id}:  
+    get:
+      tags:
+      - "purchase order"
+      summary: "Get all po list based on pr ID"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "po_status"
+        - "po_number"
+        - "amount"
+        - "submission_datetime"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "po_number_filter"
+        in: "query"
+        description: "Filter for the po number"
+        type: "string"
+      - name: "po_status_filter"
+        in: "query"
+        description: "Filter for the po status"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoListIdResponse"
+        "400":
+          description: "Invalid po ID"
+        "401":
+          description: "Invalid access token"
+  /purchase-order/details/{id}:  
+    get:
+      tags:
+      - "purchase order"
+      summary: "Get po details"
+      description: "For buyer and employee who is the pr owner linked to the po"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of pr"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoDetailsResponse"
+        "400":
+          description: "Invalid po ID"
+        "401":
+          description: "Invalid access token"
+  /purchase-order/pending:  
+    get:
+      tags:
+      - "purchase order"
+      summary: "Get pending po list for verifier / app"
+      description: "Buyers only"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "order_by"
+        in: "query"
+        type: "string"
+        enum:
+        - "po_number"
+        - "project_code"
+        - "project_title"
+        - "company"
+        - "branch"
+        - "department"
+        - "amount"
+        - "submission_datetime"
+        default: "submission_datetime"
+      - name: "order"
+        in: "query"
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      - name: "limit"
+        in: "query"
+        type: "integer"
+        default: 15
+      - name: "page"
+        in: "query"
+        type: "integer"
+        default: 1
+      - name: "po_number_filter"
+        in: "query"
+        description: "Filter for the po number"
+        type: "string"
+      - name: "start_date_time"
+        in: "query"
+        description: "Filter for the start date time"
+        type: "string"
+      - name: "end_date_time"
+        in: "query"
+        description: "Filter for the end date time"
+        type: "string"
+      - name: "project_code_filter"
+        in: "query"
+        description: "Filter for the project code"
+        type: "string"
+      - name: "project_title_filter"
+        in: "query"
+        description: "Filter for the project title"
+        type: "string"
+      - name: "branch_filter"
+        in: "query"
+        description: "Filter for the branch"
+        type: "string"
+      - name: "department_filter"
+        in: "query"
+        description: "Filter for the department"
+        type: "string"
+      - name: "company_filter"
+        in: "query"
+        description: "Filter for the company"
+        type: "string"
+      - name: "pr_number_filter"
+        in: "query"
+        description: "Filter for the pr number"
+        type: "string"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoListResponse"
+        "401":
+          description: "Invalid access token"        
+  /purchase-order/verify/{id}:  
+    post:
+      tags:
+      - "purchase order"
+      summary: "Approve / reject / amend po"
+      description: "All users who are verifier / approver of po"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of po"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/VerifyPoRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoDetailsResponse"
+        "400":
+          description: "Invalid po ID / Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token" 
+  /purchase-order/submit:  
+    post:
+      tags:
+      - "purchase order"
+      summary: "Submit po"
+      description: "Buyer only"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/SubmitPoRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoDetailsResponse"
+        "400":
+          description: "Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /purchase-order/resubmit/{id}:  
+    post:
+      tags:
+      - "purchase order"
+      summary: "Resubmit a po"
+      description: "Owner of PO with AMMEND status"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of po"
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/ResubmitPoRequest"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoDetailsResponse"
+        "400":
+          description: "Invalid po ID / Missing or invalid input parameters"
+        "401":
+          description: "Invalid access token"
+  /purchase-order/cancel/{id}:  
+    post:
+      tags:
+      - "purchase order"
+      summary: "Cancel po"
+      description: "Owner of po"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of po"
+        required: true
+        type: "integer"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PoDetailsResponse"
+        "400":
+          description: "Invalid po ID"
+        "401":
+          description: "Invalid access token"           
+
 definitions:
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"
-  Category:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Category"
-  Pet:
+  LoginRequest:
     type: "object"
     required:
-    - "name"
-    - "photoUrls"
+    - "email"
+    - "password"
     properties:
-      id:
-        type: "integer"
-        format: "int64"
-      category:
-        $ref: "#/definitions/Category"
-      name:
-        type: "string"
-        example: "doggie"
-      photoUrls:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          type: "string"
-          xml:
-            name: "photoUrl"
-      tags:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          xml:
-            name: "tag"
-          $ref: "#/definitions/Tag"
-      status:
-        type: "string"
-        description: "pet status in the store"
-        enum:
-        - "available"
-        - "pending"
-        - "sold"
-    xml:
-      name: "Pet"
-  Tag:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Tag"
-  Order:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      petId:
-        type: "integer"
-        format: "int64"
-      quantity:
-        type: "integer"
-        format: "int32"
-      shipDate:
-        type: "string"
-        format: "date-time"
-      status:
-        type: "string"
-        description: "Order Status"
-        enum:
-        - "placed"
-        - "approved"
-        - "delivered"
-      complete:
-        type: "boolean"
-    xml:
-      name: "Order"
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      username:
-        type: "string"
-      firstName:
-        type: "string"
-      lastName:
-        type: "string"
       email:
         type: "string"
       password:
         type: "string"
-      phone:
+  LoginResponse:
+    type: "object"
+    properties:
+      access_token:
         type: "string"
-      userStatus:
+  ForgotPasswordRequest:
+    type: "object"
+    required:
+    - "email"
+    properties:
+      email:
+        type: "string"
+  ResetPasswordRequest:
+    type: "object"
+    required:
+    - "password"
+    - "confirm_password"
+    properties:
+      password:
+        type: "string"
+      confirm_password:
+        type: "string"
+  BuyerGroupListResponse:
+    type: "object"
+    properties:
+      buyer_group_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/BuyerGroup"
+      total_buyer_group:
         type: "integer"
-        format: "int32"
-        description: "User Status"
-    xml:
-      name: "User"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+      total_page:
+        type: "integer"
+  BuyerGroup:
+    type: "object"
+    properties:
+      buyer_group_id:
+        type: "integer"
+      buyer_group_name:
+        type: "string"
+        example: "Klang Valley"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  AddBuyerGroupRequest:
+    type: "object"
+    required:
+    - "buyer_group_name"
+    properties:
+      buyer_group_name:
+        type: "string"
+      order_by:
+        type: "string"
+        enum:
+        - "buyer_group_name"
+        - "created_at"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for buyer group name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of buyer group (1 / 0)"
+  AddBuyerGroupResponse:
+    type: "object"
+    properties:
+      buyer_group_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/BuyerGroup"
+      total_buyer_group:
+        type: "integer"
+      total_page:
+        type: "integer"
+      buyer_group_id:
+        type: "integer"
+  DeleteBuyerGroupRequest:
+    type: "object"
+    properties:
+      order_by:
+        type: "string"
+        enum:
+        - "buyer_group_name"
+        - "created_at"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for buyer group name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of buyer group (1 / 0)"
+  BranchListAdminResponse:
+    type: "object"
+    properties:
+      branch_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/BranchAdmin"
+      total_branch:
+        type: "integer"
+      total_page:
+        type: "integer"
+  BranchAdmin:
+    type: "object"
+    properties:
+      branch_id:
+        type: "integer"
+      buyer_group_id:
+        type: "integer"
+      branch_name:
+        type: "string"
+        example: "Shah Alam"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+      buyer_group_name:
+        type: "string"
+        example: "Klang Valley"
+  BranchListResponse:
+    type: "object"
+    properties:
+      branch_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/Branch"
+      total_branch:
+        type: "integer"
+      total_page:
+        type: "integer"
+  Branch:
+    type: "object"
+    properties:
+      branch_id:
+        type: "integer"
+      buyer_group_id:
+        type: "integer"
+      branch_name:
+        type: "string"
+        example: "Shah Alam"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  AddBranchRequest:
+    type: "object"
+    required:
+    - "branch_name"
+    properties:
+      branch_name:
+        type: "string"
+      buyer_group_id:
+        type: "string"
+      order_by:
+        type: "string"
+        enum:
+        - "buyer_group_name"
+        - "created_at"
+        - "branch_name"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for branch name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of branch (1 / 0)"
+      buyer_group_filter:
+        description: "Filter for the buyer group name"
+        type: "string"
+      buyer_group_null:
+        description: "Filter for branches with null buyer group (1 / 0)"
+        type: "integer"
+  DeleteBranchRequest:
+    type: "object"
+    required:
+    - "branch_name"
+    properties:
+      order_by:
+        type: "string"
+        enum:
+        - "buyer_group_name"
+        - "created_at"
+        - "branch_name"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for branch name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of branch (1 / 0)"
+      buyer_group_filter:
+        description: "Filter for the buyer group name"
+        type: "string"
+      buyer_group_null:
+        description: "Filter for branches with null buyer group (1 / 0)"
+        type: "integer"
+  CompanyListResponse:
+    type: "object"
+    properties:
+      company_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/Company"
+      total_company:
+        type: "integer"
+      total_page:
+        type: "integer"
+  Company:
+    type: "object"
+    properties:
+      company_id:
+        type: "integer"
+      company_name:
+        type: "string"
+        example: "Serba Dinamik Group Berhad"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  AddCompanyRequest:
+    type: "object"
+    required:
+    - "company_name"
+    properties:
+      company_name:
+        type: "string"
+      order_by:
+        type: "string"
+        enum:
+        - "company_name"
+        - "created_at"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for company name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of company (1 / 0)"
+  DeleteCompanyRequest:
+    type: "object"
+    properties:
+      order_by:
+        type: "string"
+        enum:
+        - "company_name"
+        - "created_at"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for company name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of company (1 / 0)"
+  DepartmentListResponse:
+    type: "object"
+    properties:
+      department_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/Department"
+      total_department:
+        type: "integer"
+      total_page:
+        type: "integer"
+  Department:
+    type: "object"
+    properties:
+      department_id:
+        type: "integer"
+      department_name:
+        type: "string"
+        example: "Studio 8"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  AddDepartmentRequest:
+    type: "object"
+    required:
+    - "department_name"
+    properties:
+      department_name:
+        type: "string"
+      order_by:
+        type: "string"
+        enum:
+        - "department_name"
+        - "created_at"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for department name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of department (1 / 0)"
+  DeleteDepartmentRequest:
+    type: "object"
+    properties:
+      order_by:
+        type: "string"
+        enum:
+        - "company_name"
+        - "created_at"
+        default: "created_at"
+      order:
+        type: "string"
+        enum:
+        - "ASC"
+        - "DESC"
+        default: "ASC"
+      limit:
+        type: "integer"
+        default: 15
+      page:
+        type: "integer"
+        default: 1
+      search_value:
+        type: "string"
+        description: "Filter for company name"
+      delete_filter:
+        type: "integer"
+        description: "Filter for deleted status of company (1 / 0)"
+  ProjectListResponse:
+    type: "object"
+    properties:
+      project_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/Project"
+      total_project:
+        type: "integer"
+      total_page:
+        type: "integer"
+  Project:
+    type: "object"
+    properties:
+      project_id:
+        type: "integer"
+      project_title:
+        type: "string"
+        example: "AIPODS"
+      project_code:
+        type: "string"
+        example: "AIPODS123"
+      verifier1_id:
+        type: "string"
+      verifier2_id:
+        type: "string"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  ProjectDetailsResponse:
+    type: "object"
+    properties:
+      project_id:
+        type: "integer"
+      project_title:
+        type: "string"
+        example: "AIPODS"
+      project_code:
+        type: "string"
+        example: "AIPODS123"
+      verifier1_id:
+        type: "string"
+      verifier2_id:
+        type: "string"
+      is_delete:
+        type: "boolean"
+        example: false
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+      verifier1:
+        $ref: "#/definitions/User"
+      verifier2:
+        $ref: "#/definitions/User"
+  User:
+    type: "object"
+    properties:
+      user_id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      company_id:
+        type: "string"
+      branch_id:
+        type: "string"
+      department_id:
+        type: "string"
+      position:
+        type: "string"
+      role:
+        type: "string"
+      access_token:
+        type: "string"
+      verifier1_id:
+        type: "string"
+      verifier2_id:
+        type: "string"
+      is_nominated:
+        type: "boolean"
+      verified_at:
+        type: "string"
+        format: "date-time"
+      is_delete:
+        type: "boolean"
+      is_block:
+        type: "boolean"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+      staff_id:
+        type: "string"
+  AddProjectRequest:
+    type: "object"
+    required:
+    - "project_title"
+    - "project_code"
+    - "verifier1_id"
+    - "verifier2_id"
+    properties:
+      project_title:
+        type: "string"
+      project_code:
+        type: "string"
+      verifier1_id:
+        type: "string"
+      verifier2_id:
+        type: "string"
+      description:
+        type: "string"
+  UploadFileRequest:
+    type: "object"
+    properties:
+      image_file:
+        type: "string"
+        format: "binary"
+  UploadFileResponse:
+    type: "object"
+    properties:
+      filename:
+        type: "string"
+  UserDetailsResponse:
+    type: "object"
+    properties:
+      user_details:
+         $ref: "#/definitions/UserDetails"
+  UserDetails:
+    type: "object"
+    properties:
+      user_id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      company_id:
+        type: "string"
+      branch_id:
+        type: "string"
+      department_id:
+        type: "string"
+      position:
+        type: "string"
+      role:
+        type: "string"
+      access_token:
+        type: "string"
+      verifier1_id:
+        type: "string"
+      verifier2_id:
+        type: "string"
+      is_nominated:
+        type: "boolean"
+      verified_at:
+        type: "string"
+        format: "date-time"
+      is_delete:
+        type: "boolean"
+      is_block:
+        type: "boolean"
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+      staff_id:
+        type: "string"
+      department:
+        type: "string"
+      branch:
+        type: "string"
+      company:
+        type: "string"
+      verifier_1:
+        $ref: "#/definitions/User"
+      verifier_2:
+        $ref: "#/definitions/User"
+      approver:
+        $ref: "#/definitions/User"
+  UserListResponse:
+    type: "object"
+    properties:
+      user_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/User"
+      total_user:
+        type: "integer"
+      total_page:
+        type: "integer"
+  RegisterRequest:
+    type: "object"
+    required:
+    - "email"
+    - "name"
+    - "position"
+    - "password"
+    - "confirm_password"
+    - "branch_id"
+    - "company_id"
+    - "department_id"
+    properties:
+      email:
+        type: "string"
+      name:
+        type: "string"
+      position:
+        type: "string"  
+      password:
+        type: "string"
+      confirm_password:
+        type: "string"
+      staff_id:
+        type: "string"
+      verifier_id:
+        type: "string"
+      branch_id:
+        type: "string"
+      company_id:
+        type: "string"
+      department_id:
+        type: "string"  
+  UserNominateResponse:
+    type: "object"
+    properties:
+      a_pm:
+        $ref: "#/definitions/UserDetails"
+      as_scm:
+        $ref: "#/definitions/UserDetails"
+  UserNominateRequest:
+    type: "object"
+    required:
+    - "trigger"
+    properties:
+      trigger:
+        type: "string"
+        enum:
+        - "AS_SCM"
+        - "A_PM"      
+  AdminRegisterRequest:
+    type: "object"
+    required:
+    - "email"
+    - "name"
+    - "password"
+    - "confirm_password"
+    properties:
+      email:
+        type: "string"
+      name:
+        type: "string"
+      password:
+        type: "string"
+      confirm_password:
+        type: "string"
+  AdminAddUserRequest:
+    type: "object"
+    required:
+    - "email"
+    - "name"
+    - "position"
+    - "branch_id"
+    - "company_id"
+    - "department_id"
+    - "role"
+    properties:
+      email:
+        type: "string"
+      name:
+        type: "string"
+      position:
+        type: "string"
+      staff_id:
+        type: "string"
+      verifier_id:
+        type: "string"
+      branch_id:
+        type: "string"
+      company_id:
+        type: "string"
+      department_id:
+        type: "string" 
+      role:
+        type: "string"
+        enum:
+        - "CEO"
+        - "EMPLOYEE"
+        - "HR_M"
+        - "BUYER"
+        - "H_SCM"
+        - "AS_SCM"
+        - "PM"
+        - "A_PM"
+  AdminVerifyUserRequest:
+    type: "object"
+    required:
+    - "position"
+    - "branch_id"
+    - "company_id"
+    - "department_id"
+    - "verifier_id"
+    properties:
+      position:
+        type: "string"
+      staff_id:
+        type: "string"
+      verifier_id:
+        type: "string"
+      branch_id:
+        type: "string"
+      company_id:
+        type: "string"
+      department_id:
+        type: "string"
+  PrListResponse:
+    type: "object"
+    properties:
+      pr_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/PurchaseRequest"
+      total_pr:
+        type: "integer"
+      total_page:
+        type: "integer"
+  PurchaseRequest:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      company_name:
+        type: "string"
+      pr_id:
+        type: "integer"
+      user_id:
+        type: "integer"
+      project_id:
+        type: "integer"
+      is_project:
+        type: "boolean"
+      pr_number:
+        type: "string"
+      department_id:
+        type: "integer"
+      company_id:
+        type: "integer"
+      branch_id:
+        type: "integer"
+      category:
+        type: "string"
+      is_hr:
+        type: "boolean"
+      verifier1_id:
+        type: "integer"
+      verifier1_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      verifier1_datetime:
+        type: "string"
+        format: "datetime"
+      verifier2_id:
+        type: "integer"
+      verifier2_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      verifier2_datetime:
+        type: "string"
+        format: "datetime"
+      hr_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      hr_datetime:
+        type: "string"
+        format: "datetime"
+      ceo_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      ceo_datetime:
+        type: "string"
+        format: "datetime"
+      pr_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+        - "CANCEL"
+        - "CLOSED"
+      pr_remarks:
+        type: "string"
+      comments:
+        type: "string"
+      attachment:
+        type: "string"
+      buyer_group_id:
+        type: "integer"
+      buyer_id:
+        type: "integer"
+      created_at:
+        type: "string"
+        format: "datetime"
+      updated_at:
+        type: "string"
+        format: "datetime"
+      submission_datetime:
+        type: "string"
+        format: "datetime"
+      project_code:
+        type: "string"
+      project_title:
+        type: "string"
+      department_name:
+        type: "string"
+      branch_name:
+        type: "string"
+  PoListResponse:
+    type: "object"
+    properties:
+      po_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/PurchaseOrder"
+      total_po:
+        type: "integer"
+      total_page:
+        type: "integer"
+  PurchaseOrder:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      company_name:
+        type: "string"
+      po_id:
+        type: "integer"
+      pr_id:
+        type: "integer"
+      user_id:
+        type: "integer"
+      po_number:
+        type: "string"
+      supplier_name:
+        type: "string"
+      supplier_pic_name:
+        type: "string"
+      supplier_address:
+        type: "string"
+      supplier_contact_no:
+        type: "string"
+      supplier_fax_no:
+        type: "string"
+      supplier_email:
+        type: "string"
+      grand_total:
+        type: "number"
+        format: "double"
+      quotation_ref_no:
+        type: "string"
+      delivery_address:
+        type: "string"
+      gpm_id:
+        type: "integer"
+      gpm_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      gpm_datetime:
+        type: "string"
+        format: "datetime"
+      scm_id:
+        type: "integer"
+      scm_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      scm_datetime:
+        type: "string"
+        format: "datetime"
+      ceo_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      ceo_datetime:
+        type: "string"
+        format: "datetime"
+      po_remarks:
+        type: "string"
+      po_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+        - "CANCEL"
+      quotation:
+        type: "string"
+      supplier_registration_no:
+        type: "string"
+      supplier_tax_no:
+        type: "string"
+      created_at:
+        type: "string"
+        format: "datetime"
+      updated_at:
+        type: "string"
+        format: "datetime"
+      submission_datetime:
+        type: "string"
+        format: "datetime"
+      branch_name:
+        type: "string"
+      department_name:
+        type: "string"
+      pr_number:
+        type: "string"
+      project_code:
+        type: "string"
+      project_title:
+        type: "string"
+  PoListIdResponse:
+    type: "object"
+    properties:
+      po_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/PurchaseOrderId"
+      total_po:
+        type: "integer"
+      total_page:
+        type: "integer"
+  PurchaseOrderId:
+    type: "object"
+    properties:
+      po_id:
+        type: "integer"
+      pr_id:
+        type: "integer"
+      user_id:
+        type: "integer"
+      po_number:
+        type: "string"
+      supplier_name:
+        type: "string"
+      supplier_pic_name:
+        type: "string"
+      supplier_address:
+        type: "string"
+      supplier_contact_no:
+        type: "string"
+      supplier_fax_no:
+        type: "string"
+      supplier_email:
+        type: "string"
+      grand_total:
+        type: "number"
+        format: "double"
+      quotation_ref_no:
+        type: "string"
+      delivery_address:
+        type: "string"
+      gpm_id:
+        type: "integer"
+      gpm_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      gpm_datetime:
+        type: "string"
+        format: "datetime"
+      scm_id:
+        type: "integer"
+      scm_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      scm_datetime:
+        type: "string"
+        format: "datetime"
+      ceo_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      ceo_datetime:
+        type: "string"
+        format: "datetime"
+      po_remarks:
+        type: "string"
+      po_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+        - "CANCEL"
+      quotation:
+        type: "string"
+      supplier_registration_no:
+        type: "string"
+      supplier_tax_no:
+        type: "string"
+      created_at:
+        type: "string"
+        format: "datetime"
+      updated_at:
+        type: "string"
+        format: "datetime"
+      submission_datetime:
+        type: "string"
+        format: "datetime"
+      pr_number:
+        type: "string"
+      pr_name:
+        type: "string"
+      pr_department:
+        type: "string"
+  PrListSelfResponse:
+    type: "object"
+    properties:
+      pr_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/PurchaseRequestSelf"
+      total_pr:
+        type: "integer"
+      total_page:
+        type: "integer"
+  PurchaseRequestSelf:
+    type: "object"
+    properties:
+      pr_id:
+        type: "integer"
+      user_id:
+        type: "integer"
+      project_id:
+        type: "integer"
+      is_project:
+        type: "boolean"
+      pr_number:
+        type: "string"
+      department_id:
+        type: "integer"
+      company_id:
+        type: "integer"
+      branch_id:
+        type: "integer"
+      category:
+        type: "string"
+      is_hr:
+        type: "boolean"
+      verifier1_id:
+        type: "integer"
+      verifier1_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      verifier1_datetime:
+        type: "string"
+        format: "datetime"
+      verifier2_id:
+        type: "integer"
+      verifier2_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      verifier2_datetime:
+        type: "string"
+        format: "datetime"
+      hr_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      hr_datetime:
+        type: "string"
+        format: "datetime"
+      ceo_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      ceo_datetime:
+        type: "string"
+        format: "datetime"
+      pr_status:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+        - "CANCEL"
+        - "CLOSED"
+      pr_remarks:
+        type: "string"
+      comments:
+        type: "string"
+      attachment:
+        type: "string"
+      buyer_group_id:
+        type: "integer"
+      buyer_id:
+        type: "integer"
+      created_at:
+        type: "string"
+        format: "datetime"
+      updated_at:
+        type: "string"
+        format: "datetime"
+      submission_datetime:
+        type: "string"
+        format: "datetime"
+  PrDetailsResponse:
+    type: "object"
+    properties:
+      pr_details:
+        $ref: "#/definitions/PurchaseRequest"
+      pr_items:
+        type: "array"
+        items:
+          $ref: "#/definitions/PrItem"
+  PrItem:
+    type: "object"
+    properties:
+      pr_item_id:
+        type: "integer"
+      pr_id:
+        type: "integer"
+      title:
+        type: "string"
+      description:
+        type: "string"
+      quantity:
+        type: "integer"
+      created_at:
+        type: "string"
+        format: "datetime"
+      updated_at:
+        type: "string"
+        format: "datetime"
+      uom:
+        type: "string"
+  VerifyPrRequest:
+    type: "object"
+    required:
+    - "status"
+    properties:
+      status:
+        type: "string"
+        enum:
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      remarks:
+        type: "string"
+  SubmitPrRequest:
+    required:
+    - "is_project"
+    - "category"
+    - "is_hr"
+    - "pr_items"
+    type: "object"
+    properties:
+      is_project:
+        type: "boolean"
+      project_id:
+        type: "integer"
+      category:
+        type: "string"
+      is_hr:
+        type: "boolean"
+      comments:
+        type: "string"
+      attachment:
+        type: "string"
+      pr_items:
+        type: "array"
+        items:
+          $ref: "#/definitions/PrItemSubmit"
+  PrItemSubmit:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+      description:
+        type: "string"
+      quantity:
+        type: "integer"
+      uom:
+        type: "string"
+  PoDetailsResponse:
+    type: "object"
+    properties:
+      po_details:
+        $ref: "#/definitions/PurchaseOrderId"
+      po_items:
+        type: "array"
+        items:
+          $ref: "#/definitions/PoItem"
+  PoItem:
+    type: "object"
+    properties:
+      po_item_id:
+        type: "integer"
+      po_id:
+        type: "integer"
+      title:
+        type: "string"
+      description:
+        type: "string"
+      quantity:
+        type: "integer"
+      unit_price:
+        type: "number"
+        format: "double"
+      total_price:
+        type: "integer"
+        format: "double"
+      created_at:
+        type: "string"
+        format: "datetime"
+      updated_at:
+        type: "string"
+        format: "datetime"
+      uom:
+        type: "string"      
+  VerifyPoRequest:
+    type: "object"
+    required:
+    - "status"
+    properties:
+      status:
+        type: "string"
+        enum:
+        - "APPROVE"
+        - "REJECT"
+        - "AMEND"
+      comments:
+        type: "string"      
+  SubmitPoRequest:
+    required:
+    - "pr_id"
+    - "supplier_name"
+    - "supplier_contact_no"
+    - "supplier_address"
+    - "supplier_email"
+    - "delivery_address"
+    - "grand_total"
+    - "quotation"
+    - "po_items"
+    type: "object"
+    properties:
+      pr_id: 
+        type: "integer"
+      supplier_name: 
+        type: "string"
+      supplier_pic_name: 
+        type: "string"
+      supplier_contact_no: 
+        type: "string"
+      supplier_fax_no: 
+        type: "string"
+      supplier_address: 
+        type: "string"
+      supplier_email: 
+        type: "string"
+      supplier_registration_no: 
+        type: "string"
+      supplier_tax_no: 
+        type: "string"
+      supplier_ref_no: 
+        type: "string"
+      delivery_address:
+        type: "string"
+      grand_total:
+        type: "number"
+        format: "double"
+      quotation:
+        type: "string"
+      po_items:
+        type: "array"
+        items:
+          $ref: "#/definitions/PoItemSubmit"
+  PoItemSubmit:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+      description:
+        type: "string"
+      quantity:
+        type: "integer"
+      uom:
+        type: "string" 
+      unit_price:
+        type: "number"
+        format: "double"
+      total_price:
+        type: "number"
+        format: "double"
+  ResubmitPoRequest:
+    required:
+    - "supplier_name"
+    - "supplier_contact_no"
+    - "supplier_address"
+    - "supplier_email"
+    - "delivery_address"
+    - "grand_total"
+    - "quotation"
+    - "po_items"
+    type: "object"
+    properties:
+      pr_id: 
+        type: "integer"
+      supplier_name: 
+        type: "string"
+      supplier_pic_name: 
+        type: "string"
+      supplier_contact_no: 
+        type: "string"
+      supplier_fax_no: 
+        type: "string"
+      supplier_address: 
+        type: "string"
+      supplier_email: 
+        type: "string"
+      supplier_registration_no: 
+        type: "string"
+      supplier_tax_no: 
+        type: "string"
+      supplier_ref_no: 
+        type: "string"
+      delivery_address:
+        type: "string"
+      grand_total:
+        type: "number"
+        format: "double"
+      quotation:
+        type: "string"
+      po_items:
+        type: "array"
+        items:
+          $ref: "#/definitions/PoItemSubmit"
+        
+        
+        
+        
+        
